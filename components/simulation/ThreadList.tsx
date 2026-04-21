@@ -15,8 +15,8 @@ const stateSections: { title: string; states: ThreadState[] }[] = [
 
 export function ThreadList({ threads }: ThreadListProps) {
   return (
-    <Panel className="min-h-full">
-      <div className="flex h-full flex-col gap-6">
+    <Panel>
+      <div className="flex flex-col gap-6">
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
             Thread surfaces

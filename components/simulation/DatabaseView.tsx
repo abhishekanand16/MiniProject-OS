@@ -30,8 +30,8 @@ export function DatabaseView({ state }: DatabaseViewProps) {
   const styles = statusStyles[state.status];
 
   return (
-    <Panel className="min-h-full">
-      <div className="flex h-full flex-col gap-6">
+    <Panel>
+      <div className="flex flex-col gap-6">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">

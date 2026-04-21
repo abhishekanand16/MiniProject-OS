@@ -110,7 +110,7 @@ export function SimulationDashboard() {
         />
       </motion.section>
 
-      <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr_1.4fr]">
+      <section className="grid items-start gap-6 xl:grid-cols-[0.9fr_1.1fr_1.4fr]">
         <motion.div
           animate={{ opacity: 1, y: 0 }}
           initial={{ opacity: 0, y: 20 }}

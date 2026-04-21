@@ -25,3 +25,6 @@ Track implementation mistakes and their fixes so future agents do not repeat the
 
 - Mistake: Earlier docs implied backend logic was intentionally absent after UI completion.
   - Fix: Rewrote `README.md` with architecture, API contracts, test instructions, and extension points for full project handoff.
+
+- Mistake: In fullscreen layouts, the three-column simulation section stretched all cards to the height of the tallest column (`ThreadList`), leaving large empty areas in queue and database panels.
+  - Fix: Updated the grid container to `items-start` in `components/simulation/SimulationDashboard.tsx` and removed `min-h-full`/`h-full` wrappers from `QueueView`, `DatabaseView`, and `ThreadList` so each panel keeps content-driven height.
