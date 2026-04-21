@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+:root {
+  --font-heading: "Space Grotesk", sans-serif;
+  --font-body: "Manrope", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+
+  --color-bg: #020617;
+  --color-panel: #0f172a;
+  --color-panel-soft: #162033;
+  --color-primary: #7dd3fc;
+  --color-primary-strong: #38bdf8;
+  --color-accent: #fb923c;
+  --color-success: #34d399;
+  --color-danger: #fb7185;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(14, 165, 233, 0.15), transparent 28%),
+    radial-gradient(circle at top right, rgba(251, 146, 60, 0.14), transparent 24%),
+    linear-gradient(180deg, #0f172a 0%, #020617 45%, #020617 100%);
+  color: #f8fafc;
+  font-family: var(--font-body);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: linear-gradient(180deg, rgba(255, 255, 255, 0.8), transparent 100%);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-family: var(--font-heading);
+}
+
+p {
+  margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(125, 211, 252, 0.3);
+  color: #f8fafc;
+}
+
+.motion-safe-enter {
+  @media (prefers-reduced-motion: no-preference) {
+    transition: transform 200ms ease-out, opacity 200ms ease-out;
+  }
+}
