@@ -19,3 +19,9 @@ Track implementation mistakes and their fixes so future agents do not repeat the
 
 - Mistake: Next.js initially warned about the wrong workspace root because another lockfile existed higher in the filesystem.
   - Fix: `next.config.ts` now sets `turbopack.root` to this repository so builds resolve the intended project root cleanly.
+
+- Mistake: The project previously stopped at UI-only scaffolding, leaving the simulation engine, policies, APIs, persistence, and integration incomplete.
+  - Fix: Added `engine/`, `app/api/simulation/`, `lib/simulation/`, `lib/persistence/`, and `context/SimulationContext.tsx` so the UI binds to deterministic backend-driven state.
+
+- Mistake: Earlier docs implied backend logic was intentionally absent after UI completion.
+  - Fix: Rewrote `README.md` with architecture, API contracts, test instructions, and extension points for full project handoff.

@@ -1,42 +1,40 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { MotionConfig, motion } from "framer-motion";
 
 import { Badge } from "@/components/ui/Badge";
+import { useSimulationContext } from "@/context/SimulationContext";
 
 import { ControlPanel } from "./ControlPanel";
-import {
-  databaseState,
-  heroMetrics,
-  logEntries,
-  modeOptions,
-  queueThreads,
-  speedOptions,
-  statCards,
-  threads,
-} from "./mock-data";
 import { DatabaseView } from "./DatabaseView";
 import { LogPanel } from "./LogPanel";
 import { QueueView } from "./QueueView";
 import { StatsPanel } from "./StatsPanel";
 import { ThreadList } from "./ThreadList";
-import type { LogTone, SimulatorMode, SpeedOption } from "./types";
 
 export function SimulationDashboard() {
-  const [mode, setMode] = useState<SimulatorMode>("fair");
-  const [speed, setSpeed] = useState<SpeedOption>("1x");
-  const [isRunning, setIsRunning] = useState(true);
-  const [tick, setTick] = useState(9);
-  const [activeFilter, setActiveFilter] = useState<LogTone | "all">("all");
-
-  const filteredLogs = useMemo(() => {
-    if (activeFilter === "all") {
-      return logEntries;
-    }
-
-    return logEntries.filter((entry) => entry.tone === activeFilter);
-  }, [activeFilter]);
+  const {
+    mode,
+    speed,
+    isRunning,
+    tick,
+    activeFilter,
+    setMode,
+    setSpeed,
+    setActiveFilter,
+    start,
+    pause,
+    reset,
+    step,
+    modeOptions,
+    speedOptions,
+    queueThreads,
+    databaseState,
+    threads,
+    filteredLogs,
+    statCards,
+    heroMetrics,
+  } = useSimulationContext();
 
   return (
     <MotionConfig reducedMotion="user">
@@ -53,9 +51,9 @@ export function SimulationDashboard() {
             <div className="flex flex-wrap gap-3">
               <Badge tone="info">OS lab dashboard</Badge>
               <Badge tone={isRunning ? "success" : "warning"}>
-                {isRunning ? "preview running" : "preview paused"}
+                {isRunning ? "simulation running" : "simulation paused"}
               </Badge>
-              <Badge tone="neutral">UI-only prototype</Badge>
+              <Badge tone="neutral">backend connected</Badge>
             </div>
 
             <div className="space-y-4">
@@ -67,9 +65,9 @@ export function SimulationDashboard() {
                   Industrial teaching UI for explaining lock contention and access flow.
                 </h1>
                 <p className="max-w-2xl text-base text-slate-300 sm:text-lg">
-                  This interface is intentionally built without scheduling logic. It is a
-                  polished shell for future engine integration, optimized for teaching,
-                  demos, and visual clarity.
+                  The interface now streams deterministic scheduling state from the simulation
+                  engine while preserving the original UI/UX design for teaching, demos, and
+                  visual clarity.
                 </p>
               </div>
             </div>
@@ -101,17 +99,11 @@ export function SimulationDashboard() {
           mode={mode}
           modeOptions={modeOptions}
           onModeChange={setMode}
-          onPause={() => setIsRunning(false)}
-          onReset={() => {
-            setTick(0);
-            setIsRunning(false);
-            setActiveFilter("all");
-            setMode("fair");
-            setSpeed("1x");
-          }}
+          onPause={pause}
+          onReset={() => void reset()}
           onSpeedChange={setSpeed}
-          onStart={() => setIsRunning(true)}
-          onStep={() => setTick((value) => value + 1)}
+          onStart={start}
+          onStep={() => void step()}
           speed={speed}
           speedOptions={speedOptions}
           tick={tick}
