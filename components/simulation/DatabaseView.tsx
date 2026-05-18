@@ -33,20 +33,14 @@ export function DatabaseView({ state }: DatabaseViewProps) {
     <Panel>
       <div className="flex flex-col gap-6">
         <div className="flex items-start justify-between gap-4">
-          <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
-              Shared resource
-            </p>
-            <h2 className="text-2xl font-bold text-white">Database access chamber</h2>
-            <p className="text-sm text-slate-300">
-              A visual lock state that helps students see when reads can batch and
-              when an exclusive writer would take over.
-            </p>
+          <div>
+            <h2 className="text-lg font-semibold text-white">Shared resource</h2>
+            <p className="mt-1 text-sm text-slate-400">Current lock: reads, write, or idle.</p>
           </div>
           <Badge tone={styles.badge}>{state.status}</Badge>
         </div>
 
-        <div className="relative flex flex-1 items-center justify-center overflow-hidden rounded-[28px] border border-white/10 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.08),transparent_50%),rgba(2,6,23,0.6)] p-8">
+        <div className="relative flex flex-1 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-slate-950/50 p-6">
           <div
             className={cn(
               "absolute inset-0 bg-gradient-to-b opacity-90 transition duration-300",
@@ -56,7 +50,7 @@ export function DatabaseView({ state }: DatabaseViewProps) {
           <div className="relative flex flex-col items-center gap-4 text-center">
             <div
               className={cn(
-                "flex h-40 w-40 items-center justify-center rounded-full border border-white/10 shadow-[0_0_0_18px_rgba(255,255,255,0.03)] ring-1 transition duration-300",
+                "flex h-32 w-32 items-center justify-center rounded-full border border-white/10 ring-1 transition duration-300",
                 styles.core,
               )}
             >

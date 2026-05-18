@@ -6,6 +6,7 @@ import type { SimulatorMode, SpeedOption } from "./types";
 
 type ControlPanelProps = {
   isRunning: boolean;
+  isReady: boolean;
   mode: SimulatorMode;
   speed: SpeedOption;
   tick: number;
@@ -21,6 +22,7 @@ type ControlPanelProps = {
 
 export function ControlPanel({
   isRunning,
+  isReady,
   mode,
   speed,
   tick,
@@ -35,96 +37,85 @@ export function ControlPanel({
 }: ControlPanelProps) {
   return (
     <Panel className="overflow-hidden">
-      <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-200/80">
-              Control deck
-            </p>
-            <h2 className="text-2xl font-bold text-white">Drive the visual prototype</h2>
-            <p className="max-w-2xl text-sm text-slate-300">
-              Buttons and selectors are intentionally UI-only. They preview states,
-              hierarchy, and interaction feedback without wiring scheduling logic.
-            </p>
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300">
-            <span className="text-slate-500">Current tick</span>
-            <span className="ml-3 font-mono text-lg font-semibold text-white">
-              {tick.toString().padStart(2, "0")}
-            </span>
-          </div>
+      <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm font-medium text-slate-300">Playback</p>
+          <p className="font-mono text-sm text-slate-500">
+            Tick <span className="text-white">{tick.toString().padStart(2, "0")}</span>
+          </p>
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
-          <fieldset className="space-y-3">
-            <legend className="text-sm font-semibold text-slate-200">Scheduling mode</legend>
-            <div className="grid gap-3 sm:grid-cols-3">
-              {modeOptions.map((option) => {
-                const isSelected = option.value === mode;
+        <div
+          className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center"
+          role="group"
+          aria-label="Simulation controls"
+        >
+          <div className="flex flex-wrap gap-2">
+            {modeOptions.map((option) => {
+              const selected = option.value === mode;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={selected}
+                  className={cn(
+                    "rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
+                    selected
+                      ? "border-sky-400/60 bg-sky-500/20 text-white"
+                      : "border-white/10 bg-white/5 text-slate-300 hover:border-white/20 hover:bg-white/10",
+                  )}
+                  onClick={() => onModeChange(option.value)}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
 
-                return (
-                  <button
-                    key={option.value}
-                    aria-pressed={isSelected}
-                    className={cn(
-                      "min-h-14 rounded-2xl px-4 py-3 text-left text-sm transition duration-200 ease-out",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
-                      isSelected
-                        ? "bg-sky-400/18 text-white ring-1 ring-sky-300/40"
-                        : "bg-white/5 text-slate-300 ring-1 ring-white/10 hover:bg-white/10 hover:text-white active:scale-[0.99]",
-                    )}
-                    onClick={() => onModeChange(option.value)}
-                    type="button"
-                  >
-                    <span className="block font-semibold">{option.label}</span>
-                    <span className="mt-1 block text-xs uppercase tracking-[0.18em] text-slate-500">
-                      Visual select
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </fieldset>
+          <div
+            className="hidden h-8 w-px bg-white/10 sm:block"
+            aria-hidden
+          />
 
-          <fieldset className="space-y-3">
-            <legend className="text-sm font-semibold text-slate-200">Speed preset</legend>
-            <div className="grid grid-cols-4 gap-3">
-              {speedOptions.map((option) => {
-                const isSelected = option === speed;
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-slate-500">Speed</span>
+            {speedOptions.map((option) => {
+              const selected = option === speed;
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  aria-pressed={selected}
+                  className={cn(
+                    "min-w-[3rem] rounded-lg border px-2.5 py-1.5 text-sm font-medium tabular-nums",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
+                    selected
+                      ? "border-white bg-white text-slate-950"
+                      : "border-white/10 bg-white/5 text-slate-300 hover:bg-white/10",
+                  )}
+                  onClick={() => onSpeedChange(option)}
+                >
+                  {option}
+                </button>
+              );
+            })}
+          </div>
 
-                return (
-                  <button
-                    key={option}
-                    aria-pressed={isSelected}
-                    className={cn(
-                      "min-h-11 rounded-2xl px-3 py-2 text-sm font-semibold transition duration-200 ease-out",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
-                      isSelected
-                        ? "bg-white text-slate-950"
-                        : "bg-white/5 text-slate-300 ring-1 ring-white/10 hover:bg-white/10 hover:text-white active:scale-[0.98]",
-                    )}
-                    onClick={() => onSpeedChange(option)}
-                    type="button"
-                  >
-                    {option}
-                  </button>
-                );
-              })}
-            </div>
-          </fieldset>
-        </div>
-
-        <div className="flex flex-wrap gap-3">
-          <Button disabled={isRunning} onClick={onStart} variant="primary">
-            Start preview
-          </Button>
-          <Button disabled={!isRunning} onClick={onPause}>
-            Pause preview
-          </Button>
-          <Button onClick={onStep}>Step frame</Button>
-          <Button onClick={onReset} variant="ghost">
-            Reset view
-          </Button>
+          <div className="flex flex-1 flex-wrap gap-2 sm:justify-end">
+            <Button disabled={!isReady || isRunning} onClick={onStart} variant="primary">
+              Run
+            </Button>
+            <Button disabled={!isReady || !isRunning} onClick={onPause}>
+              Pause
+            </Button>
+            <Button disabled={!isReady} onClick={onStep}>
+              Step
+            </Button>
+            <Button onClick={onReset} variant="ghost">
+              Reset
+            </Button>
+          </div>
         </div>
       </div>
     </Panel>

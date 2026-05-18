@@ -30,15 +30,9 @@ export function LogPanel({ activeFilter, logs, onFilterChange }: LogPanelProps) 
     <Panel className="min-h-full">
       <div className="flex h-full flex-col gap-6">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
-              Event feed
-            </p>
-            <h2 className="text-2xl font-bold text-white">Narrated system timeline</h2>
-            <p className="text-sm text-slate-300">
-              Filter chips are UI-ready and intentionally decoupled from real event
-              generation so they can receive future engine logs directly.
-            </p>
+          <div>
+            <h2 className="text-lg font-semibold text-white">Event log</h2>
+            <p className="mt-1 text-sm text-slate-400">Filter by kind of event.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             {filterOptions.map((filter) => {
@@ -93,10 +87,7 @@ export function LogPanel({ activeFilter, logs, onFilterChange }: LogPanelProps) 
           <div className="flex flex-1 items-center justify-center rounded-[28px] border border-dashed border-white/12 bg-white/4 p-8 text-center">
             <div className="space-y-2">
               <p className="text-lg font-semibold text-white">No events in this filter</p>
-              <p className="text-sm text-slate-400">
-                The empty state preserves rhythm even when a future engine produces no
-                matching entries.
-              </p>
+              <p className="text-sm text-slate-400">Nothing matches this filter.</p>
             </div>
           </div>
         )}

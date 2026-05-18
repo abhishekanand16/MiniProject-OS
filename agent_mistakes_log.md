@@ -28,3 +28,17 @@ Track implementation mistakes and their fixes so future agents do not repeat the
 
 - Mistake: In fullscreen layouts, the three-column simulation section stretched all cards to the height of the tallest column (`ThreadList`), leaving large empty areas in queue and database panels.
   - Fix: Updated the grid container to `items-start` in `components/simulation/SimulationDashboard.tsx` and removed `min-h-full`/`h-full` wrappers from `QueueView`, `DatabaseView`, and `ThreadList` so each panel keeps content-driven height.
+
+### 2026-05-18
+
+- Mistake: The auto-run `setInterval` in `SimulationContext` depended on a `step` callback whose identity changed whenever `state` changed, so the interval was torn down and recreated every tick. That produced uneven timing and unnecessary work.
+  - Fix: Keep latest `SimulationState` and policy mode in refs, implement `step` with `useCallback` and an empty dependency array, and use a `stepInFlightRef` guard so overlapping requests cannot stack when the user spams Step or the network is slow.
+
+- Mistake: `Run` could be enabled before `/api/simulation/init` finished, so `start` could turn on the interval while `state` was still null and steps silently no-op until load completed.
+  - Fix: Expose `isReady` from context (`state !== null`), disable Run/Step until ready, and make `start` bail out if `stateRef` is still empty.
+
+- Mistake: Assigning `stateRef.current = state` and `modeRef.current = mode` during render tripped the `react-hooks/refs` ESLint rule ("Cannot access refs during render") on newer React lint configs.
+  - Fix: Sync both refs from a `useEffect` that depends on `[state]` and `[mode]` (two effects), while still setting `modeRef.current` synchronously inside `setMode` so policy changes apply before the next render when needed.
+
+- Mistake: `ControlPanel` copy still described controls as "UI-only" and unrelated to scheduling, which contradicted the wired API integration.
+  - Fix: Removed that misleading copy and simplified control labels to Run / Pause / Step / Reset with short policy names (Readers first / Writers first / Fair).

@@ -10,15 +10,9 @@ export function StatsPanel({ stats }: StatsPanelProps) {
   return (
     <Panel className="min-h-full">
       <div className="flex h-full flex-col gap-6">
-        <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
-            Teaching KPIs
-          </p>
-          <h2 className="text-2xl font-bold text-white">Stats and learning cues</h2>
-          <p className="text-sm text-slate-300">
-            Placeholder numbers keep the card rhythm realistic now and provide future
-            slots for measured throughput and wait-time metrics.
-          </p>
+        <div>
+          <h2 className="text-lg font-semibold text-white">Stats</h2>
+          <p className="mt-1 text-sm text-slate-400">Waits, queue, and throughput.</p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
