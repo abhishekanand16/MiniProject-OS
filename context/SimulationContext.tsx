@@ -36,9 +36,9 @@ const defaultThreads: SimulationConfigThread[] = [
 ];
 
 const modeOptions: { value: SimulatorMode; label: string }[] = [
-  { value: "readerPriority", label: "Reader priority" },
-  { value: "writerPriority", label: "Writer priority" },
-  { value: "fair", label: "Fair FIFO" },
+  { value: "readerPriority", label: "Readers first" },
+  { value: "writerPriority", label: "Writers first" },
+  { value: "fair", label: "Fair" },
 ];
 
 const speedOptions: SpeedOption[] = ["0.5x", "1x", "2x", "4x"];
@@ -48,6 +48,7 @@ type SimulationContextValue = {
   mode: SimulatorMode;
   speed: SpeedOption;
   isRunning: boolean;
+  isReady: boolean;
   tick: number;
   activeFilter: LogTone | "all";
   modeOptions: { value: SimulatorMode; label: string }[];
@@ -127,6 +128,17 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
   const [isRunning, setIsRunning] = useState(false);
   const [activeFilter, setActiveFilter] = useState<LogTone | "all">("all");
   const timerRef = useRef<number | null>(null);
+  const stateRef = useRef<SimulationState | null>(null);
+  const modeRef = useRef<SimulatorMode>(mode);
+  const stepInFlightRef = useRef(false);
+
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
+  useEffect(() => {
+    modeRef.current = mode;
+  }, [mode]);
 
   useEffect(() => {
     let cancelled = false;
@@ -150,27 +162,38 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const step = useCallback(async () => {
-    if (!state) {
+    const snapshot = stateRef.current;
+    if (!snapshot || stepInFlightRef.current) {
       return;
     }
-    const response = await fetch("/api/simulation/step", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ simulationId: state.simulationId, tickDelta: 1, mode }),
-    });
-    const payload = (await response.json()) as { simulation: SimulationState };
-    setState(payload.simulation);
-    if (!payload.simulation.isRunning) {
-      setIsRunning(false);
+    stepInFlightRef.current = true;
+    try {
+      const response = await fetch("/api/simulation/step", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          simulationId: snapshot.simulationId,
+          tickDelta: 1,
+          mode: modeRef.current,
+        }),
+      });
+      const payload = (await response.json()) as { simulation: SimulationState };
+      setState(payload.simulation);
+      if (!payload.simulation.isRunning) {
+        setIsRunning(false);
+      }
+    } finally {
+      stepInFlightRef.current = false;
     }
-  }, [state, mode]);
+  }, []);
 
   const reset = useCallback(async () => {
-    if (!state) {
+    const snapshot = stateRef.current;
+    if (!snapshot) {
       const response = await fetch("/api/simulation/init", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode, seed: 42, autoAdvanceTicksPerStep: 1, threads: defaultThreads }),
+        body: JSON.stringify({ mode: modeRef.current, seed: 42, autoAdvanceTicksPerStep: 1, threads: defaultThreads }),
       });
       const payload = (await response.json()) as { simulation: SimulationState };
       setState(payload.simulation);
@@ -180,52 +203,64 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
     const response = await fetch("/api/simulation/reset", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ simulationId: state.simulationId }),
+      body: JSON.stringify({ simulationId: snapshot.simulationId }),
     });
     const payload = (await response.json()) as { simulation: SimulationState };
     setState(payload.simulation);
     setIsRunning(false);
     setActiveFilter("all");
-  }, [mode, state]);
+  }, []);
 
-  const setMode = useCallback(
-    async (nextMode: SimulatorMode) => {
-      setModeState(nextMode);
-      if (!state) {
-        return;
-      }
-      const response = await fetch("/api/simulation/step", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ simulationId: state.simulationId, tickDelta: 0, mode: nextMode }),
-      });
-      if (response.ok) {
-        const payload = (await response.json()) as { simulation: SimulationState };
-        setState(payload.simulation);
-      }
-    },
-    [state],
-  );
+  const setMode = useCallback(async (nextMode: SimulatorMode) => {
+    setModeState(nextMode);
+    modeRef.current = nextMode;
+    const snapshot = stateRef.current;
+    if (!snapshot) {
+      return;
+    }
+    const response = await fetch("/api/simulation/step", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ simulationId: snapshot.simulationId, tickDelta: 0, mode: nextMode }),
+    });
+    if (response.ok) {
+      const payload = (await response.json()) as { simulation: SimulationState };
+      setState(payload.simulation);
+    }
+  }, []);
+
+  const start = useCallback(() => {
+    if (!stateRef.current) {
+      return;
+    }
+    setIsRunning(true);
+  }, []);
+
+  const pause = useCallback(() => {
+    setIsRunning(false);
+  }, []);
 
   useEffect(() => {
-    if (!isRunning || !state) {
-      if (timerRef.current) {
+    if (!isRunning) {
+      if (timerRef.current !== null) {
         window.clearInterval(timerRef.current);
+        timerRef.current = null;
       }
-      timerRef.current = null;
       return;
     }
 
+    const intervalMs = speedToMs[speed];
     timerRef.current = window.setInterval(() => {
       void step();
-    }, speedToMs[speed]);
+    }, intervalMs);
 
     return () => {
-      if (timerRef.current) {
+      if (timerRef.current !== null) {
         window.clearInterval(timerRef.current);
+        timerRef.current = null;
       }
     };
-  }, [isRunning, speed, state, step]);
+  }, [isRunning, speed, step]);
 
   const visualThreads = useMemo(() => (state ? toThreadVisual(state) : []), [state]);
   const queueThreads = useMemo(
@@ -248,6 +283,7 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
       mode,
       speed,
       isRunning,
+      isReady: state !== null,
       tick: state?.tick ?? 0,
       activeFilter,
       modeOptions,
@@ -304,11 +340,11 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
       setSpeed,
       setActiveFilter,
       step,
-      start: () => setIsRunning(true),
-      pause: () => setIsRunning(false),
+      start,
+      pause,
       reset,
     }),
-    [activeFilter, filteredLogs, isRunning, mode, queueThreads, reset, setMode, speed, state, step, visualThreads],
+    [activeFilter, filteredLogs, isRunning, mode, pause, queueThreads, reset, setMode, speed, start, state, step, visualThreads],
   );
 
   return <SimulationContext.Provider value={value}>{children}</SimulationContext.Provider>;

@@ -17,15 +17,9 @@ export function ThreadList({ threads }: ThreadListProps) {
   return (
     <Panel>
       <div className="flex flex-col gap-6">
-        <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
-            Thread surfaces
-          </p>
-          <h2 className="text-2xl font-bold text-white">Reader and writer cards</h2>
-          <p className="text-sm text-slate-300">
-            Cards are organized by visible lifecycle state so the future simulation layer
-            only needs to swap in real data and transitions.
-          </p>
+        <div>
+          <h2 className="text-lg font-semibold text-white">Threads</h2>
+          <p className="mt-1 text-sm text-slate-400">By state: active, waiting, completed.</p>
         </div>
 
         <div className="space-y-6">
